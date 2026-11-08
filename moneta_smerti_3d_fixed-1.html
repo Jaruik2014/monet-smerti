@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Монета Смерти 3D</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#071426;color:#fff;font-family:Arial,sans-serif}#game{position:fixed;inset:0}
+.panel{background:#101d31eF;border:1px solid #64748b;border-radius:14px;padding:14px;box-shadow:0 8px 28px #0008}
+#login{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:linear-gradient(135deg,#0f172a,#312e81)}
+#login .panel{width:min(92vw,380px);text-align:center;border:2px solid #818cf8}
+input,select{background:#071426;color:white;border:1px solid #475569;border-radius:8px;padding:10px;width:100%;margin:5px 0 12px}
+button{background:linear-gradient(100deg,#4f46e5,#9333ea);border:0;color:white;font-weight:bold;padding:10px 13px;border-radius:9px;cursor:pointer;margin:3px}
+button:active{transform:scale(.97)}.hidden{display:none!important}
+#hud{position:fixed;inset:0;pointer-events:none}.interactive{pointer-events:auto}
+#stats{position:absolute;top:12px;left:12px;width:190px;font-size:13px}
+.bar{height:9px;background:#334155;border-radius:9px;margin:5px 0 8px;overflow:hidden}.fill{height:100%;width:100%;background:#ef4444}.energy{background:#3b82f6}
+#topright{position:absolute;top:12px;right:12px;display:flex;gap:5px}
+#actions{position:absolute;right:12px;bottom:18px;display:grid;grid-template-columns:repeat(2,66px);gap:7px}
+#actions button{height:58px;background:#17243ddd;border:1px solid #94a3b8;font-size:11px}
+#move{position:absolute;left:18px;bottom:22px;display:flex;gap:8px;flex-wrap:wrap;width:190px}
+#move button{width:52px;height:52px;background:#17243ddd;border:1px solid #94a3b8;font-size:18px}
+#notice{position:absolute;top:82px;left:50%;transform:translateX(-50%);background:#0f172add;padding:9px 14px;border-radius:10px;text-align:center;max-width:90vw}
+#modal{position:fixed;z-index:10;inset:0;display:none;place-items:center;background:#0009;pointer-events:auto}
+#modal .panel{width:min(92vw,430px);max-height:85vh;overflow:auto}
+#modal h2{margin:0 0 12px;color:#fbbf24}#modal p{color:#cbd5e1;font-size:13px;line-height:1.45}
+.item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #334155}
+#boss{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:min(340px,65vw);text-align:center;display:none}
+#boss .fill{background:#dc2626}
+@media(max-width:600px){#stats{width:165px;padding:10px;font-size:12px}#actions{grid-template-columns:repeat(2,58px)}#actions button{height:52px;padding:4px;font-size:10px}}
+</style>
+</head>
+<body>
+<div id="game"></div>
+<div id="gameError" style="display:none;position:fixed;z-index:30;left:12px;right:12px;top:50%;transform:translateY(-50%);padding:18px;background:#7f1d1d;color:white;border:2px solid #fca5a5;border-radius:14px;text-align:center;font-weight:bold"></div>
+<div id="login"><div class="panel"><h1 style="color:#fbbf24">МОНЕТА СМЕРТИ 3D</h1><p>Твой путь начинается в открытом море!</p>
+<label>Никнейм персонажа</label><input id="playerName" value="Jaruik2014" maxlength="18" autocomplete="nickname">
+<label>Электронная почта</label><input id="playerEmail" type="email" placeholder="example@gmail.com" autocomplete="email">
+<button style="width:100%;padding:14px" onclick="startGame()">ВОЙТИ / РЕГИСТРАЦИЯ</button>
+<p style="font-size:11px;color:#cbd5e1">В этой демонстрационной версии вход локальный: пароль и подтверждение почты пока не используются.</p></div></div>
+<div id="hud" class="hidden">
+ <div id="stats" class="panel"><b id="hudName">Игрок</b><div>Уровень <span id="lvl">1</span> · <span id="island">Начальный остров</span></div>
+ <div>❤️ <span id="hpText">250/250</span></div><div class="bar"><div id="hp" class="fill"></div></div>
+ <div>⚡ <span id="energyText">100/100</span></div><div class="bar"><div id="energy" class="fill energy"></div></div>
+ <div>🪙 <span id="coins">0</span> · ⭐ <span id="xp">0</span> XP</div></div>
+ <div id="topright" class="interactive"><button onclick="openMenu('Карта островов')">🗺️</button><button onclick="openMenu('Статистика')">📊</button><button onclick="openMenu('Настройки')">⚙️</button></div>
+ <div id="boss" class="panel"><b id="bossName">БОСС</b><div class="bar"><div id="bossHp" class="fill"></div></div></div>
+ <div id="notice">Исследуй остров и найди NPC!</div>
+ <div id="move" class="interactive"><button ontouchstart="hold('forward',true)" ontouchend="hold('forward',false)" onmousedown="hold('forward',true)" onmouseup="hold('forward',false)">⬆</button><button ontouchstart="hold('left',true)" ontouchend="hold('left',false)" onmousedown="hold('left',true)" onmouseup="hold('left',false)">⬅</button><button ontouchstart="hold('back',true)" ontouchend="hold('back',false)" onmousedown="hold('back',true)" onmouseup="hold('back',false)">⬇</button><button ontouchstart="hold('right',true)" ontouchend="hold('right',false)" onmousedown="hold('right',true)" onmouseup="hold('right',false)">➡</button></div>
+ <div id="actions" class="interactive"><button onclick="attack()">⚔️<br>АТАКА</button><button onclick="bananaThrow()">🍌<br>БРОСОК</button><button onclick="bananaSpin()">🌀<br>ВРАЩЕНИЕ</button><button onclick="interact()">💬<br>ДЕЙСТВИЕ</button><button onclick="toggleFly()">🕊️<br>ПОЛЁТ</button><button onclick="openMenu('Квесты')">📜<br>КВЕСТЫ</button><button onclick="openMenu('Магазин')">🛒<br>МАГАЗИН</button></div>
+</div>
+<div id="modal"><div class="panel"><button style="float:right" onclick="closeMenu()">✖</button><h2 id="modalTitle"></h2><div id="modalBody"></div></div></div>
+<script>
+function showGameError(message){
+ const box=document.getElementById('gameError');
+ if(box){box.textContent=message;box.style.display='block';}
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"
+ onerror="showGameError('Не удалось загрузить 3D-движок. Проверь интернет и открой игру ещё раз.')"></script>
+<script>
+const islands=[
+{name:'Начальный остров',x:0,z:0,r:34,color:0x22c55e,level:1,boss:'Пиратский капитан'},
+{name:'Центральный город',x:105,z:10,r:38,color:0x64748b,level:20,boss:'Городской страж'},
+{name:'Джунгли',x:205,z:-65,r:36,color:0x15803d,level:35,boss:'Горилла'},
+{name:'Небесный остров',x:95,z:-150,r:34,color:0xfacc15,level:60,boss:'Небесный хранитель',y:22},
+{name:'Вулканический остров',x:-55,z:-145,r:38,color:0xdc2626,level:90,boss:'Повелитель лавы'},
+{name:'Монета Смерти',x:-165,z:-55,r:43,color:0x7e22ce,level:130,boss:'Великая Монета'},
+{name:'Снежный остров',x:-105,z:105,r:38,color:0xbae6fd,level:170,boss:'Ледяной король'}
+];
+const fruits=['Магнит','Дракон','Кицунэ','Лезвие','Рокету','Тыква','Контроль','Яд','Ти-рекс','Робота','Зомби','Скелета','Вода','Крипер','Гориллу'];
+let state={name:'Jaruik2014',email:'',isAdmin:false,level:1,xp:0,coins:250,hp:250,maxHp:250,energy:100,maxEnergy:100,fruit:'Нет',weapon:'Кулаки',race:'Человек',quests:0,kills:0,boat:false,flying:false,custom:{hair:'#451a03',shirt:'#2563eb',pants:'#1e293b',skin:'#ffdbac'}};
+let scene,camera,renderer,player,clock,keys={},objects=[],enemies=[],npcs=[],water,modalOpen=false,activeBoss=null,limbs=[],bananaWeapon=null,bananaProjectile=null,spinTimer=0,throwProgress=0;
+function startGame(){
+ if(!window.THREE){showGameError('3D-движок не загрузился. Проверь подключение к интернету и перезагрузи страницу.');return;}
+ const testCanvas=document.createElement('canvas');
+ const gl=testCanvas.getContext('webgl')||testCanvas.getContext('experimental-webgl');
+ if(!gl){showGameError('На этом устройстве недоступна графика WebGL. Попробуй другой браузер или включи аппаратное ускорение.');return;}
+ state.name=document.getElementById('playerName').value.trim()||'Pirate';
+ const email=document.getElementById('playerEmail').value.trim().toLowerCase();
+ if(!email||!/^\S+@\S+\.\S+$/.test(email)){alert('Введи корректную электронную почту.');return;}
+ state.email=email;
+ // Демонстрационный локальный допуск. Для настоящей игры нужна серверная авторизация.
+ state.isAdmin=email==='jaroslavseleznev2@gmail.com';
+ document.getElementById('login').classList.add('hidden');document.getElementById('hud').classList.remove('hidden');
+ if(state.isAdmin){let b=document.createElement('button');b.textContent='👑 АДМИН';b.onclick=()=>openMenu('Админ-панель');document.getElementById('topright').appendChild(b);}
+ init();updateHud();save();
+}
+function mat(c,rough=.8){return new THREE.MeshStandardMaterial({color:c,roughness:rough})}
+function init(){
+ scene=new THREE.Scene();scene.background=new THREE.Color(0x7dd3fc);scene.fog=new THREE.Fog(0x7dd3fc,.008,500);
+ camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,.1,1000);
+ try{renderer=new THREE.WebGLRenderer({antialias:true, powerPreference:'high-performance'});}catch(err){showGameError('Не удалось запустить 3D-графику на устройстве. Попробуй перезагрузить страницу или открыть её в Chrome.');throw err;}renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;document.getElementById('game').appendChild(renderer.domElement);
+ scene.add(new THREE.HemisphereLight(0xffffff,0x476078,1.4));let sun=new THREE.DirectionalLight(0xfff4d6,1.4);sun.position.set(80,130,50);sun.castShadow=true;scene.add(sun);
+ const wg=new THREE.PlaneGeometry(1000,1000,80,80);water=new THREE.Mesh(wg,new THREE.MeshPhongMaterial({color:0x0284c7,transparent:true,opacity:.88,shininess:90}));water.rotation.x=-Math.PI/2;water.position.y=-.5;scene.add(water);
+ islands.forEach((d,i)=>makeIsland(d,i));makePlayer();makeNPCs();makeEnemies();clock=new THREE.Clock();window.addEventListener('resize',resize);animate();
+}
+function makeIsland(d,i){
+ let group=new THREE.Group();group.position.set(d.x,d.y||0,d.z);scene.add(group);
+ let base=new THREE.Mesh(new THREE.CylinderGeometry(d.r,d.r+5,8,24),mat(d.color));base.position.y=-3;base.receiveShadow=true;group.add(base);
+ let grass=new THREE.Mesh(new THREE.CylinderGeometry(d.r*.91,d.r*.91,1,24),mat(d.color));grass.position.y=1;group.add(grass);
+ for(let n=0;n<7;n++){let a=Math.random()*6.28,rad=Math.random()*d.r*.7,x=Math.cos(a)*rad,z=Math.sin(a)*rad;
+ let trunk=new THREE.Mesh(new THREE.CylinderGeometry(.35,.5,3,7),mat(0x854d0e));trunk.position.set(x,2.8,z);group.add(trunk);
+ let leaves=new THREE.Mesh(new THREE.ConeGeometry(2.2,4,7),mat(i===6?0x0f766e:0x166534));leaves.position.set(x,5.7,z);group.add(leaves);}
+ if(i===1){let house=new THREE.Mesh(new THREE.BoxGeometry(18,13,14),mat(0xf1f5f9));house.position.set(0,7,0);group.add(house);let roof=new THREE.Mesh(new THREE.ConeGeometry(13,7,4),mat(0x7c3aed));roof.position.set(0,17,0);roof.rotation.y=Math.PI/4;group.add(roof);
+ addLabel('ГИГАНТСКИЙ ДОМ',d.x,d.y+24,d.z);}
+ // small dock
+ let dock=new THREE.Mesh(new THREE.BoxGeometry(9,.6,13),mat(0x92400e));dock.position.set(d.x+d.r*.65,0,d.z+d.r*.65);scene.add(dock);
+ let merchant=makeHumanoid(0x0ea5e9,0xfde68a);merchant.position.set(d.x+d.r*.65,1,d.z+d.r*.65-5);scene.add(merchant);npcs.push({mesh:merchant,type:'boat',name:'Торговец лодками',island:i});
+ let bossMarker=new THREE.Mesh(new THREE.CylinderGeometry(2,2,.5,16),mat(0xf59e0b));bossMarker.position.set(d.x-d.r*.35,1,d.z-d.r*.25);scene.add(bossMarker);
+ let npc=makeHumanoid(0xa855f7,0xffd7b5);npc.position.set(d.x-d.r*.35,1,d.z-d.r*.25);scene.add(npc);npcs.push({mesh:npc,type:'quest',name:'Квестовый NPC',island:i});
+}
+function makeHumanoid(shirt,skin){let g=new THREE.Group();let torso=new THREE.Mesh(new THREE.BoxGeometry(.9,1.2,.5),mat(shirt));torso.position.y=1.5;g.add(torso);let head=new THREE.Mesh(new THREE.BoxGeometry(.65,.65,.65),mat(skin));head.position.y=2.45;g.add(head);let legs=mat(0x1e293b);for(let x of [-.23,.23]){let l=new THREE.Mesh(new THREE.BoxGeometry(.3,.9,.35),legs);l.position.set(x,.45,0);g.add(l)}return g}
+function makePlayer(){
+ player=new THREE.Group();limbs=[];
+ const shirt=mat(state.custom.shirt),pants=mat(state.custom.pants),skin=mat(state.custom.skin),hair=mat(state.custom.hair);
+ const torso=new THREE.Mesh(new THREE.SphereGeometry(1,20,16),shirt);torso.scale.set(.43,.78,.29);torso.position.y=1.48;torso.name='shirt';torso.castShadow=true;player.add(torso);
+ const neck=new THREE.Mesh(new THREE.CylinderGeometry(.13,.15,.2,12),skin);neck.position.y=2.02;player.add(neck);
+ const head=new THREE.Mesh(new THREE.SphereGeometry(.39,20,16),skin);head.scale.set(1,1.08,.9);head.position.y=2.38;head.name='skin';head.castShadow=true;player.add(head);
+ const cap=new THREE.Mesh(new THREE.SphereGeometry(.405,18,12,0,Math.PI*2,0,Math.PI*.55),hair);cap.position.y=2.49;cap.name='hair';player.add(cap);
+ for(const x of [-.14,.14]){let eye=new THREE.Mesh(new THREE.SphereGeometry(.045,10,8),mat(0x172033));eye.position.set(x,2.4,.345);player.add(eye)}
+ function makeLimb(x,y,material,r,len){let pivot=new THREE.Group();pivot.position.set(x,y,0);player.add(pivot);let mesh=new THREE.Mesh(new THREE.SphereGeometry(1,14,12),material);mesh.scale.set(r,len*.62,r);mesh.position.y=-len*.45;mesh.castShadow=true;pivot.add(mesh);limbs.push(pivot);return pivot}
+ makeLimb(-.53,1.82,skin,.14,.48);makeLimb(.53,1.82,skin,.14,.48);
+ makeLimb(-.22,.91,pants,.17,.56);makeLimb(.22,.91,pants,.17,.56);
+ for(const x of [-.22,.22]){let shoe=new THREE.Mesh(new THREE.SphereGeometry(.2,12,8),mat(0x1e293b));shoe.scale.set(1,.55,1.45);shoe.position.set(x,.15,.08);player.add(shoe)}
+ let curve=new THREE.QuadraticBezierCurve3(new THREE.Vector3(0,0,0),new THREE.Vector3(.62,.55,0),new THREE.Vector3(.12,1.12,0));
+ bananaWeapon=new THREE.Group();bananaWeapon.add(new THREE.Mesh(new THREE.TubeGeometry(curve,24,.105,10,false),mat(0xffdf35,.35)));
+ let guard=new THREE.Mesh(new THREE.CylinderGeometry(.055,.055,.42,10),mat(0x78350f));guard.rotation.z=Math.PI/2;guard.position.y=.03;bananaWeapon.add(guard);
+ let grip=new THREE.Mesh(new THREE.CylinderGeometry(.055,.07,.35,10),mat(0x7c2d12));grip.position.y=-.2;bananaWeapon.add(grip);
+ bananaWeapon.position.set(.72,1.1,.35);bananaWeapon.rotation.z=-.35;player.add(bananaWeapon);
+ player.position.set(0,1,0);scene.add(player);
+}
+function addLabel(text,x,y,z){/* world labels are represented by nearby markers in this prototype */}
+function makeNPCs(){}
+function makeEnemies(){islands.forEach((d,i)=>{let e=makeHumanoid(0x7f1d1d,0xd6a77a);e.position.set(d.x+7,1,d.z-8);scene.add(e);enemies.push({mesh:e,hp:120+i*100,max:120+i*100,island:i,boss:true,name:d.boss,alive:true});});}
+function animate(){requestAnimationFrame(animate);let dt=Math.min(clock.getDelta(),.04),t=clock.elapsedTime;
+ let p=water.geometry.attributes.position;for(let i=0;i<p.count;i++){let x=p.getX(i),y=p.getY(i);p.setZ(i,Math.sin(x*.06+t*1.7)*.25+Math.cos(y*.07+t)*.2)}p.needsUpdate=true;water.geometry.computeVertexNormals();
+ let speed=18*(state.flying?1.5:1);let dx=(keys.right?1:0)-(keys.left?1:0),dz=(keys.back?1:0)-(keys.forward?1:0);if(dx||dz){let len=Math.hypot(dx,dz);player.position.x+=dx/len*speed*dt;player.position.z+=dz/len*speed*dt;player.rotation.y=Math.atan2(dx,dz)}
+ player.position.y=state.flying?7+Math.sin(t*3)*.35:1;
+ let moving=!!(dx||dz);limbs.forEach((limb,i)=>{let target=moving?Math.sin(t*10+(i%2)*Math.PI)*.62:0;limb.rotation.x+=(target-limb.rotation.x)*Math.min(1,dt*12)});
+ if(spinTimer>0){spinTimer-=dt;player.rotation.y+=dt*19;player.position.y=1+Math.sin(t*28)*.12;enemies.forEach(e=>{if(e.alive&&Math.hypot(e.mesh.position.x-player.position.x,e.mesh.position.z-player.position.z)<5&&t-(e.lastSpinHit||0)>.55){e.lastSpinHit=t;damageEnemy(e,34,true)}})}
+ if(bananaProjectile){throwProgress+=dt*1.15;let q=Math.min(throwProgress,2),start=bananaProjectile.userData.start,target=bananaProjectile.userData.target,hand=player.position.clone().add(new THREE.Vector3(.8,1.6,.2)),from=q<=1?start:target,to=q<=1?target:hand,phase=q<=1?q:q-1;bananaProjectile.position.set(from.x+(to.x-from.x)*phase,from.y+(to.y-from.y)*phase+Math.sin(phase*Math.PI)*3,from.z+(to.z-from.z)*phase);bananaProjectile.rotation.y+=dt*18;if(q>=2){scene.remove(bananaProjectile);bananaProjectile=null;throwProgress=0;bananaWeapon.visible=true;}}
+ camera.position.lerp(new THREE.Vector3(player.position.x,player.position.y+8,player.position.z+13),.08);camera.lookAt(player.position.x,player.position.y+1,player.position.z);
+ // Water hurts away from land. Shark race can be added later.
+ let onLand=islands.some(d=>Math.hypot(player.position.x-d.x,player.position.z-d.z)<d.r+1);
+ if(!onLand&&!state.flying){state.hp=Math.max(0,state.hp-8*dt);if(state.hp===0){player.position.set(0,1,0);state.hp=state.maxHp;notify('Ты утонул! Возвращение на начальный остров.');}updateHud();}
+ let nearest=islands.reduce((a,b)=>Math.hypot(player.position.x-a.x,player.position.z-a.z)<Math.hypot(player.position.x-b.x,player.position.z-b.z)?a:b);document.getElementById('island').textContent=nearest.name;
+ renderer.render(scene,camera);
+}
+function resize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)}
+function hold(k,v){keys[k]=v}
+window.addEventListener('keydown',e=>{let map={w:'forward',ArrowUp:'forward',s:'back',ArrowDown:'back',a:'left',ArrowLeft:'left',d:'right',ArrowRight:'right'};if(map[e.key])keys[map[e.key]]=true;if(e.key===' '){attack();e.preventDefault()}});
+window.addEventListener('keyup',e=>{let map={w:'forward',ArrowUp:'forward',s:'back',ArrowDown:'back',a:'left',ArrowLeft:'left',d:'right',ArrowRight:'right'};if(map[e.key])keys[map[e.key]]=false});
+function updateHud(){document.getElementById('hudName').textContent=state.name;document.getElementById('lvl').textContent=state.level;document.getElementById('coins').textContent=Math.floor(state.coins);document.getElementById('xp').textContent=state.xp;document.getElementById('hpText').textContent=Math.ceil(state.hp)+'/'+state.maxHp;document.getElementById('energyText').textContent=Math.floor(state.energy)+'/'+state.maxEnergy;document.getElementById('hp').style.width=100*state.hp/state.maxHp+'%';document.getElementById('energy').style.width=100*state.energy/state.maxEnergy+'%'}
+function notify(s){let n=document.getElementById('notice');n.textContent=s;n.style.display='block';clearTimeout(notify.timer);notify.timer=setTimeout(()=>n.style.display='none',3500)}
+function attack(){let e=nearestEnemy();if(!e){notify('Поблизости нет врагов. Найди босса на острове!');return}damageEnemy(e,35+state.level*2)}
+function skill(){bananaThrow()}
+function bananaThrow(){if(state.energy<20){notify('Недостаточно энергии!');return}if(bananaProjectile)return;state.energy-=20;let e=nearestEnemy(),start=player.position.clone().add(new THREE.Vector3(.8,2,.2)),target=e?e.mesh.position.clone():player.position.clone().add(new THREE.Vector3(0,0,-12));bananaProjectile=bananaWeapon.clone();bananaProjectile.position.copy(start);bananaProjectile.userData={start:start.clone(),target:target.clone()};bananaProjectile.scale.setScalar(1.25);scene.add(bananaProjectile);bananaWeapon.visible=false;throwProgress=0;if(e)damageEnemy(e,95+state.level*4);notify('Банановый меч летит и возвращается!');updateHud()}
+function bananaSpin(){if(state.energy<35){notify('Недостаточно энергии!');return}state.energy-=35;spinTimer=4.2;notify('ВРАЩЕНИЕ! Двигайся и поражай врагов вокруг!');updateHud()}
+function nearestEnemy(){let found=enemies.filter(e=>e.alive&&Math.hypot(e.mesh.position.x-player.position.x,e.mesh.position.z-player.position.z)<12);return found.sort((a,b)=>Math.hypot(a.mesh.position.x-player.position.x,a.mesh.position.z-player.position.z)-Math.hypot(b.mesh.position.x-player.position.x,b.mesh.position.z-player.position.z))[0]}
+function damageEnemy(e,amount,quiet=false){e.hp-=amount;activeBoss=e;document.getElementById('boss').style.display='block';document.getElementById('bossName').textContent='БОСС: '+e.name;document.getElementById('bossHp').style.width=Math.max(0,e.hp/e.max*100)+'%';if(e.hp<=0){e.alive=false;e.mesh.visible=false;state.coins+=100+e.island*75;state.xp+=80+e.island*35;state.kills++;if(state.xp>=state.level*100){state.xp=0;state.level++;state.maxHp+=20;state.hp=state.maxHp;notify('НОВЫЙ УРОВЕНЬ: '+state.level+'!')}else notify('Босс побеждён! Получены монеты и опыт.');document.getElementById('boss').style.display='none';updateHud();save()}else if(!quiet)notify(e.name+': осталось '+Math.ceil(e.hp)+' HP')}
+function interact(){let n=npcs.map(n=>({...n,dist:Math.hypot(n.mesh.position.x-player.position.x,n.mesh.position.z-player.position.z)})).sort((a,b)=>a.dist-b.dist)[0];if(!n||n.dist>12){notify('Подойди ближе к NPC или торговцу в порту.');return}if(n.type==='boat'){openMenu('Торговец лодками')}else openMenu('Квесты')}
+function toggleFly(){state.flying=!state.flying;notify(state.flying?'Полёт включён':'Полёт выключен')}
+function openMenu(title){modalOpen=true;document.getElementById('modal').style.display='grid';document.getElementById('modalTitle').textContent=title;let b=document.getElementById('modalBody');b.innerHTML='';
+ const add=(html)=>b.insertAdjacentHTML('beforeend',html);
+ if(title==='Статистика'){add(`<p>Имя: ${state.name}<br>Уровень: ${state.level}<br>Опыт: ${state.xp}<br>Монеты: ${state.coins}<br>Раса: ${state.race}<br>Фрукт: ${state.fruit}<br>Оружие: ${state.weapon}<br>Побеждено боссов: ${state.kills}<br>Здоровье: ${state.hp}/${state.maxHp}</p>`)}
+ if(title==='Карта островов'){islands.forEach((d,i)=>add(`<div class="item"><span>${i+1}. ${d.name}<br><small>Рекомендуемый уровень: ${d.level}</small></span><button onclick="travel(${i})">Плыть</button></div>`))}
+ if(title==='Торговец лодками'){add('<p>Купи лодку, чтобы пересечь море. После покупки можно отправляться к любому острову через карту.</p>');[[0,'Простая лодка'],[150,'Скоростная лодка'],[500,'VIP катер']].forEach(([price,name])=>add(`<div class="item"><span>${name}</span><button onclick="buyBoat(${price})">${price===0?'Бесплатно':price+' 🪙'}</button></div>`))}
+ if(title==='Магазин'){add('<p>Магазин в гигантском доме Центрального города. Фрукты и экипировка:</p>');fruits.forEach((f,i)=>add(`<div class="item"><span>🍈 ${f}</span><button onclick="buyFruit('${f}',${350+i*90})">${350+i*90} 🪙</button></div>`));[['Фрукт «Огонь»',300],['Фрукт «Лёд»',300],['Фрукт «Свет»',500],['Стальной меч',400],['Плащ путешественника',250]].forEach(([name,price])=>add(`<div class="item"><span>${name}</span><button onclick="buyItem('${name}',${price})">${price} 🪙</button></div>`))}
+ if(title==='Квесты'){add(`<p>Квест NPC: победи босса на любом острове и возвращайся за наградой.</p><p>Прогресс: ${state.kills}/1 побед.</p><button onclick="claimQuest()">ЗАБРАТЬ НАГРАДУ</button>`)}
+ if(title==='Настройки'){add('<p>Управление: WASD или стрелки. На телефоне используй кнопки слева. Атака — пробел или кнопка справа.</p><button onclick="save()">Сохранить прогресс</button><button onclick="openMenu(\'Редактор персонажа\')">Редактор персонажа</button>')}
+ if(title==='Редактор персонажа'){
+ add(`<p>Настрой внешний вид героя:</p><label>Цвет волос</label><input type="color" id="hairColor" value="${state.custom.hair}"><label>Цвет кожи</label><input type="color" id="skinColor" value="${state.custom.skin}"><label>Цвет одежды</label><input type="color" id="shirtColor" value="${state.custom.shirt}"><label>Цвет штанов</label><input type="color" id="pantsColor" value="${state.custom.pants}"><label>Раса</label><select id="race"><option>Человек</option><option>Кролик</option><option>Акула</option><option>Ангел</option><option>Киборг</option><option>Гуль</option><option>Дракон</option></select><button onclick="applyCustomization()">СОХРАНИТЬ ВНЕШНОСТЬ</button>`);
+ }
+ if(title==='Админ-панель'){
+ if(!state.isAdmin){add('<p>Доступ запрещён.</p>');return}
+ add('<p>Главный администратор: jaroslavseleznev2@gmail.com</p><button onclick="adminCoins()">+100 000 монет</button><button onclick="adminLevel()">Уровень 700</button><button onclick="adminFruit()">Выдать фрукт «Газ»</button><button onclick="adminHeal()">Полностью восстановить здоровье</button>');
+ }
+}
+
+function applyCustomization(){
+ state.custom.hair=document.getElementById('hairColor').value;
+ state.custom.skin=document.getElementById('skinColor').value;
+ state.custom.shirt=document.getElementById('shirtColor').value;
+ state.custom.pants=document.getElementById('pantsColor').value;
+ player.traverse(o=>{if(!o.isMesh)return;if(o.name==='hair')o.material.color.set(state.custom.hair);if(o.name==='skin')o.material.color.set(state.custom.skin);if(o.name==='shirt')o.material.color.set(state.custom.shirt);if(o.name==='pants')o.material.color.set(state.custom.pants)});
+ closeMenu();notify('Внешность персонажа сохранена!');save();
+}
+function adminCoins(){if(!state.isAdmin)return;state.coins+=100000;updateHud();notify('Администратор: +100 000 монет');save()}
+function adminLevel(){if(!state.isAdmin)return;state.level=700;updateHud();notify('Установлен уровень 700');save()}
+function adminFruit(){if(!state.isAdmin)return;state.fruit='Газ';notify('Выдан фрукт: Газ');save()}
+function adminHeal(){if(!state.isAdmin)return;state.hp=state.maxHp;state.energy=state.maxEnergy;updateHud();notify('Здоровье и энергия восстановлены');save()}
+
+function closeMenu(){document.getElementById('modal').style.display='none';modalOpen=false}
+function travel(i){if(!state.boat){notify('Сначала купи лодку у торговца в порту!');return}let d=islands[i];player.position.set(d.x,1,d.z);closeMenu();notify('Ты прибыл: '+d.name)}
+function buyBoat(price){if(state.coins<price){notify('Не хватает монет!');return}state.coins-=price;state.boat=true;updateHud();closeMenu();notify('Лодка куплена! Теперь доступно путешествие по морю.');save()}
+function buyFruit(name,price){if(state.coins<price){notify('Не хватает монет!');return}state.coins-=price;state.fruit=name;notify('Получен фрукт: '+name+'!');updateHud();save();openMenu('Магазин')}
+function buyItem(name,price){if(state.coins<price){notify('Не хватает монет!');return}state.coins-=price;if(name.includes('Фрукт'))state.fruit=name.replace('Фрукт ','');else state.weapon=name;updateHud();notify('Куплено: '+name);save()}
+function claimQuest(){if(state.kills<1){notify('Сначала победи босса!');return}state.kills=0;state.coins+=250;state.xp+=100;updateHud();closeMenu();notify('Квест выполнен! +250 монет и 100 опыта.');save()}
+function save(){const copy={...state,isAdmin:false,email:''};localStorage.setItem('deathcoin-save',JSON.stringify(copy));notify('Прогресс сохранён на этом устройстве.')}
+function load(){try{let s=JSON.parse(localStorage.getItem('deathcoin-save'));if(s)state={...state,...s}}catch(e){}}
+load();
+</script>
+</body></html>
