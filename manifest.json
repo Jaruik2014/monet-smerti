@@ -1,0 +1,18 @@
+{
+  "name": "Монета смерти",
+  "short_name": "Монета смерти",
+  "description": "3D RPG на островах: бои, фрукты, боссы.",
+  "lang": "ru",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#0e2a3a",
+  "theme_color": "#0e2a3a",
+  "categories": ["games"],
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
