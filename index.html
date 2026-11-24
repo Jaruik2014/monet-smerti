@@ -486,7 +486,7 @@ mb.onclick=()=>modal('Меню',[['🎒 Инвентарь','Открыть',()=
 let camYaw=0,camV=1,cdrag=null,accFlyOn=0,accFlyT=10;const cv=rd.domElement;
 cv.addEventListener('pointerdown',e=>{cdrag={id:e.pointerId,x:e.clientX,y:e.clientY};cv.setPointerCapture(e.pointerId)});
 cv.addEventListener('pointermove',e=>{if(!cdrag||e.pointerId!=cdrag.id)return;if(ptrs.size>1)return;camYaw-=(e.clientX-cdrag.x)*.01;camV=Math.min(2,Math.max(.45,camV+(e.clientY-cdrag.y)*.005));cdrag.x=e.clientX;cdrag.y=e.clientY});
-const ce=e=>{cdrag=null};cv.addEventListener('pointerup',ce);cv.addEventListener('pointercancel',ce);cv.addEventListener('wheel',e=>{camT=Math.min(4,Math.max(.6,camT+e.deltaY*.002))},{passive:true});
+const ce=e=>{cdrag=null};cv.addEventListener('pointerup',ce);cv.addEventListener('pointercancel',ce);cv.addEventListener('wheel',e=>{camT=Math.min(4,Math.max(.15,camT+e.deltaY*.002))},{passive:true});
 const AB={crown:{coin:1.2},halo:{reg:2},horns:{dmg:1.1},wiz:{cd:.75},pirate:{boat:1.3,swim:1},bunny:{spd:1.2},wingsA:{fly:1,reg:1},wingsB:{fly:1,spd:1.15},cape:{arm:.85},jet:{fly:1,spd:1.3},icecrown:{ice:1},mask:{steal:.1},cat:{spd:1.1,cd:.9},viking:{dmg:1.2,arm:.9},ninja:{spd:1.25,cd:.9},flower:{reg:3},sun:{coin:1.25},phoenix:{fly:1,reg:2,dmg:1.1},scuba:{swim:1,boat:1.1},top:{coin:1.3},star:{coin:1.5,dmg:1.05},ghosthat:{arm:.75},devil:{dmg:1.15},anchor:{boat:1.4,swim:1}};
 function accV(k,d){const a=AB[S.accE];return a&&a[k]!=null?a[k]:d}
 ACC.push(['cat','Кошачьи ушки'],['viking','Шлем викинга'],['ninja','Повязка ниндзя'],['flower','Цветочный венок'],['sun','Солнечные очки'],['phoenix','Крылья феникса'],['scuba','Акваланг'],['top','Цилиндр богача'],['star','Звёздная корона'],['ghosthat','Капюшон призрака'],['devil','Хвост дьявола'],['anchor','Якорь капитана']);
@@ -631,7 +631,7 @@ db.addEventListener('pointerdown',e=>{db._pd=performance.now();db.onclick()});db
 /* pinch zoom + tap */
 const ptrs=new Map();let pdist=0;
 cv.addEventListener('pointerdown',e=>ptrs.set(e.pointerId,[e.clientX,e.clientY,e.clientX,e.clientY,performance.now()]));
-cv.addEventListener('pointermove',e=>{const p=ptrs.get(e.pointerId);if(!p)return;p[0]=e.clientX;p[1]=e.clientY;if(ptrs.size==2){const a=[...ptrs.values()],d=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]);if(pdist)camT=Math.min(4,Math.max(.6,camT*pdist/d));pdist=d}});
+cv.addEventListener('pointermove',e=>{const p=ptrs.get(e.pointerId);if(!p)return;p[0]=e.clientX;p[1]=e.clientY;if(ptrs.size==2){const a=[...ptrs.values()],d=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]);if(pdist)camT=Math.min(4,Math.max(.15,camT*pdist/d));pdist=d}});
 const pe=e=>{const p=ptrs.get(e.pointerId);ptrs.delete(e.pointerId);pdist=0;if(p&&holdI>=0&&ptrs.size==0&&Math.hypot(p[0]-p[2],p[1]-p[3])<10&&performance.now()-p[4]<450)fruitPrompt()};
 cv.addEventListener('pointerup',pe);cv.addEventListener('pointercancel',e=>{ptrs.delete(e.pointerId);pdist=0});
 /* fruit textures */
@@ -992,7 +992,7 @@ const mb2=mb.onclick;mb.onclick=()=>{mb2();const c=$('#mc'),x=c.lastChild,d=docu
 
 /* ===== v2.4: respawn in same sea, history, bigger/farther first-sea islands ===== */
 function respawn(){const o=isl[S.li];jy=0;jv2=0;flyT=0;if(o&&!o.noLi)pl.position.set(o.x,0,o.z+Math.min(8,o.r*.3));else pl.position.set(0,0,10)}
-const CHL=[['2.7','Катсцены: появление Кракена, босса события и разлома; админ абуз внизу админки'],['2.6','Вид от первого лица (кнопка 👁), холмы и горы на островах, большие деревья, нормальные ноги, руки и клики у тирекса, тирекс стал мифическим (у всех удалён)'],['2.5','Тирекс переделан: 5 навыков (хвост, камни, землетрясение, рёв и метеорит, притяжение), хвост без трансформации, форма T-Rex; 2.0 — птеродактиль; мутации: голубой тирекс и серый птеродактиль'],['2.4','Острова первого моря в 2 раза больше и дальше друг от друга; смерть во 2 и 3 море возрождает там же; плавное падение после полёта; у Морской акулы 5 навыков; история обновлений'],['2.3','Морская акула и Сундук акулы, разлом и Кракен (100 000 000 ХП), раса Демон, объявления'],['2.2','Дракон ходит по воде (магма), Золотой зверь быстрее и по воде'],['2.1','Мастери до 400: навыки на 50/100/150/200, форма на 300, версия 2.0 на 400, урон до ×2. Дракон: синяя мутация, залп в разные стороны, лапы змея, полёт вверх-вниз, клики'],['2.0','Третье море (15 островов, уровни до 3000), 7 новых фруктов, дракон переделан'],['1.9','События «Золотой зверь» и «Метеоритный дождь», кнопка «Моря»'],['1.7','Босс события монеты: монета с руками и ногами'],['1.6','Кнопки «Мутация» и «2.0» (вторая версия фрукта)'],['1.5','Второе море (телепорт у Стража морей), уровни до 2000, квесты на 10 убийств'],['1.4','Большая монета (10% из золотого сундука), событие «Золотая лихорадка»'],['1.3','Подарки игрокам по коду, компас'],['1.2','Острова больше, сундуки, события каждые 15 минут, аура, прыжки, пещера в вулкане, расы, ячейки фруктов, рывок'],['1.1','Версия-приложение (PWA), окно «Что нового»'],['1.0','Первая версия: 3D острова, квесты, мечи, фрукты с навыками и формами, боссы, лодки, гача Dog, админка']];
+const CHL=[['2.7.1','Мультиплеер: в настройках «Личный / Публичный» сервер; вид от первого лица — просто приблизь камеру (глаза и нос скрыты)'],['2.7','Катсцены: появление Кракена, босса события и разлома; админ абуз внизу админки'],['2.6','Вид от первого лица (кнопка 👁), холмы и горы на островах, большие деревья, нормальные ноги, руки и клики у тирекса, тирекс стал мифическим (у всех удалён)'],['2.5','Тирекс переделан: 5 навыков (хвост, камни, землетрясение, рёв и метеорит, притяжение), хвост без трансформации, форма T-Rex; 2.0 — птеродактиль; мутации: голубой тирекс и серый птеродактиль'],['2.4','Острова первого моря в 2 раза больше и дальше друг от друга; смерть во 2 и 3 море возрождает там же; плавное падение после полёта; у Морской акулы 5 навыков; история обновлений'],['2.3','Морская акула и Сундук акулы, разлом и Кракен (100 000 000 ХП), раса Демон, объявления'],['2.2','Дракон ходит по воде (магма), Золотой зверь быстрее и по воде'],['2.1','Мастери до 400: навыки на 50/100/150/200, форма на 300, версия 2.0 на 400, урон до ×2. Дракон: синяя мутация, залп в разные стороны, лапы змея, полёт вверх-вниз, клики'],['2.0','Третье море (15 островов, уровни до 3000), 7 новых фруктов, дракон переделан'],['1.9','События «Золотой зверь» и «Метеоритный дождь», кнопка «Моря»'],['1.7','Босс события монеты: монета с руками и ногами'],['1.6','Кнопки «Мутация» и «2.0» (вторая версия фрукта)'],['1.5','Второе море (телепорт у Стража морей), уровни до 2000, квесты на 10 убийств'],['1.4','Большая монета (10% из золотого сундука), событие «Золотая лихорадка»'],['1.3','Подарки игрокам по коду, компас'],['1.2','Острова больше, сундуки, события каждые 15 минут, аура, прыжки, пещера в вулкане, расы, ячейки фруктов, рывок'],['1.1','Версия-приложение (PWA), окно «Что нового»'],['1.0','Первая версия: 3D острова, квесты, мечи, фрукты с навыками и формами, боссы, лодки, гача Dog, админка']];
 function newsMenu(){S.newsSeen=NEWS[0]?NEWS[0].t:(S.newsSeen||0);hudu();const rows=[];NEWS.forEach(n=>rows.push([new Date(n.t).toLocaleDateString('ru')+' — '+n.x]));rows.push(['— История обновлений —']);CHL.forEach(c=>rows.push(['v'+c[0]+': '+c[1]]));modal('📢 Обновление',rows,S.admin?'<div class="row"><textarea id="nx" rows="3" placeholder="Текст объявления" style="width:100%"></textarea></div>':'');if(S.admin){const c=$('#mc'),cl=c.lastChild,mkb=(t,f)=>{const b=document.createElement('button');b.className='b';b.textContent=t;b.style.margin='6px 6px 0 0';b.onclick=f;c.insertBefore(b,cl)};mkb('Опубликовать',()=>{const x=$('#nx').value.trim();if(!x)return toast('Напиши текст');publishNews(x)});mkb('Токен GitHub',tokenMenu)}}
 {const K=2.3,N=17,OLD=isl.slice(0,N).map(o=>({x:o.x,z:o.z,r:o.r})),NEW=OLD.map(o=>({x:Math.round(o.x*K),z:Math.round(o.z*K),r:o.r*2}));
 const find=(x,z)=>{let b=-1,bd=1e9;OLD.forEach((o,i)=>{const d=Math.hypot(x-o.x,z-o.z);if(d<=o.r+8&&d/o.r<bd){bd=d/o.r;b=i}});return b};
@@ -1060,9 +1060,9 @@ RAR[8]=3;W[8]=.15;WC[8]=1.5;
 if(!S.rx26){S.rx26=1;S.fruits=(S.fruits||[]).filter(f=>f!==8);if(S.hold)S.hold=S.hold.map(f=>f===8?-1:f);if(S.perm)delete S.perm[8];if(S.mu)delete S.mu[8];S.mutI=(S.mutI||[]).filter(f=>f!==8);if(fruitOn==8){fruitOn=-1;S.fo=-1}holdI=-1;setHand();slotsUi();hudu()}
 /* first person */
 let fpv=false;
-const fpB=document.createElement('button');fpB.className='b';fpB.textContent='👁';fpB.style.cssText='position:fixed;right:8px;min-height:30px;padding:2px 10px;z-index:3';document.body.append(fpB);
-fpB.onclick=()=>{fpv=!fpv;toast(fpv?'Вид от первого лица':'Вид от третьего лица')};
-function v26(dt){csTick(dt);fpB.style.top='calc('+((S.admin?58:8)+126)+'px + env(safe-area-inset-top,0px))';MB.forEach(m=>{if(!m.dead&&m.type!='bigcoin'&&!(m.g.userData&&m.g.userData.krak))m.g.position.y=hAt(m.g.position.x,m.g.position.z)})}
+
+
+function v26(dt){csTick(dt);mpTick(dt);fpv=camZ<.3;faceParts.forEach(o=>o.visible=!fpv);MB.forEach(m=>{if(!m.dead&&m.type!='bigcoin'&&!(m.g.userData&&m.g.userData.krak))m.g.position.y=hAt(m.g.position.x,m.g.position.z)})}
 /* hills and mountains */
 var HILLS=[];
 function hAt(x,z){let h=0;for(const k of (HILLS||[])){const d=Math.hypot(x-k.x,z-k.z);if(d<k.R){const t=d/k.R,v=k.m?k.H*Math.pow(1-t,1.5):k.H*Math.pow(1-t*t,2);if(v>h)h=v}}return h}
@@ -1099,122 +1099,40 @@ rows.push(['Заспавнить босса рядом: <select id="abs">'+Objec
 rows.push(['Действует пока только у тебя. На всех серверах заработает после подключения мультиплеера.']);modal('🛠 Админ абуз',rows)}
 const adm10=window.adm;window.adm=()=>{adm10();const c=$('#mc'),x=c.lastChild,d=document.createElement('div');d.className='row';d.innerHTML='<span>🛠 Админ абуз</span>';const b=document.createElement('button');b.className='b';b.textContent='Открыть';b.onclick=abuseMenu;d.append(b);c.insertBefore(d,x)};
 
-const VER='2.7';
+/* ===== v2.7.1: multiplayer (private / public), zoom into first person ===== */
+(function(){
+const WS_URL="wss://monet-smerti-server.onrender.com",STORAGE_KEY="monet_smerti_server_mode";
+window.remotePlayers=window.remotePlayers||{};
+let mode=localStorage.getItem(STORAGE_KEY)||"private",socket=null,myId=null,reconnectTimer=null;
+function notify(m){if(typeof toast==="function")toast(m)}
+function closeSocket(){clearTimeout(reconnectTimer);if(socket){try{socket.close()}catch(e){}socket=null}myId=null;window.remotePlayers={}}
+function openSocket(){closeSocket();socket=new WebSocket(WS_URL);
+socket.addEventListener("open",()=>{if(mode==="public")notify("Публичный сервер подключён")});
+socket.addEventListener("message",ev=>{if(mode!=="public")return;let d;try{d=JSON.parse(ev.data)}catch(e){return}
+if(d.type==="welcome"&&d.id){myId=d.id}
+else if(d.type==="players"&&Array.isArray(d.players)){const nx={};for(const p of d.players){if(p.id!==myId)nx[p.id]=p}window.remotePlayers=nx}
+else if(d.id&&d.id!==myId){window.remotePlayers[d.id]=Object.assign({},window.remotePlayers[d.id],d)}});
+socket.addEventListener("close",()=>{if(mode==="public")reconnectTimer=setTimeout(openSocket,3000)})}
+window.setServerMode=function(n){mode=n==="public"?"public":"private";localStorage.setItem(STORAGE_KEY,mode);if(mode==="public"){notify("Включён публичный сервер (подключение может занять до минуты)");openSocket()}else{closeSocket();notify("Включён личный режим: кроме тебя никого нет")}};
+window.getServerMode=function(){return mode};
+window.sendMultiplayerState=function(p){if(mode!=="public")return;if(socket&&socket.readyState===WebSocket.OPEN)socket.send(JSON.stringify(p))};
+if(mode==="public")openSocket();
+})();
+/* remote players */
+const RPM={};let mpT=0;
+function nameSprite(txt){const c=document.createElement('canvas');c.width=256;c.height=64;const g=c.getContext('2d');g.font='bold 34px sans-serif';g.textAlign='center';g.textBaseline='middle';g.lineWidth=6;g.strokeStyle='#000';g.strokeText(txt,128,32);g.fillStyle='#fff';g.fillText(txt,128,32);const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false}));sp.scale.set(4,1,1);return sp}
+function mpTick(dt){const pub=getServerMode()==='public',rp=pub?window.remotePlayers:{};
+if(pub){mpT-=dt;if(mpT<=0){mpT=.1;sendMultiplayerState({type:'state',name:S.name,x:pl.position.x,y:pl.position.y,z:pl.position.z,ry:P.rotation.y,hair:S.hair,shirt:S.shirt,pants:S.pants,sea:seaN})}}
+Object.keys(rp).forEach(id=>{const p=rp[id];if(typeof p.x!=='number'||typeof p.z!=='number')return;let e=RPM[id];if(!e){const g=hum({shirt:p.shirt||'#c33',pants:p.pants||'#333',hair:p.hair||'#222'}),sp=nameSprite(String(p.name||'Игрок'));sp.position.y=3.8;g.add(sp);sc.add(g);g.position.set(p.x,p.y||0,p.z);e=RPM[id]={g}}
+const g=e.g,k=Math.min(1,dt*8),ox=g.position.x,oz=g.position.z;g.position.x+=(p.x-ox)*k;g.position.z+=(p.z-oz)*k;g.position.y+=((p.y||0)-g.position.y)*k;if(typeof p.ry==='number')g.rotation.y=p.ry;g.visible=(p.sea==null||p.sea===seaN);swg(g,performance.now()/1000,0,Math.hypot(p.x-ox,p.z-oz)>.05?1:0)});
+Object.keys(RPM).forEach(id=>{if(!rp[id]){sc.remove(RPM[id].g);delete RPM[id]}})}
+const sb2=sb.onclick;sb.onclick=()=>{sb2();const c=$('#mc'),x=c.lastChild,d=document.createElement('div');d.className='row';d.innerHTML='<span id="srvT"></span>';const b=document.createElement('button');b.className='b';const upd=()=>{$('#srvT').textContent='Сервер: '+(getServerMode()==='public'?'Публичный (другие игроки)':'Личный (только ты)');b.textContent=getServerMode()==='public'?'→ Личный':'→ Публичный'};b.onclick=()=>{setServerMode(getServerMode()==='public'?'private':'public');upd()};d.append(b);c.insertBefore(d,x);upd()};
+/* first person: hide eyes and nose */
+const faceParts=P.children.filter(o=>o.isMesh&&o.geometry&&o.geometry.type=='SphereGeometry'&&o.position.y>2.3&&o.position.y<2.55&&Math.abs(o.position.x)<=.2&&o.position.z>.3);
+
+const VER='2.7.1';
 const adm9=window.adm;window.adm=()=>{if(!S.admin)return toast('Только для админа');adm9()};
 {const h=document.createElement('div');h.textContent='Версия '+VER;h.style.cssText='position:fixed;bottom:6px;left:50%;transform:translateX(-50%);font-size:12px;opacity:.6;z-index:6';$('#main').append(h)}
-if(S.seen!==VER){S.seen=VER;setTimeout(()=>modal('Обновление 2.7',[['Катсцены: Кракен вылезает из воды, босс события падает с неба, открывается разлом (кнопка «Пропустить»)'],['Админам: в самом низу админки «🛠 Админ абуз»'],['Подарок за обновление: +1000 монет','Забрать',()=>{S.coins+=1000;hudu();closeM()}]]),500)}
+if(S.seen!==VER){S.seen=VER;setTimeout(()=>modal('Обновление 2.7.1',[['Настройки → Сервер: «Личный» (только ты) или «Публичный» (другие игроки)'],['Вид от первого лица: просто приблизь камеру пальцами; глаза и нос не видны'],['Катсцены: Кракен, босс события, разлом; админам «🛠 Админ абуз»'],['Подарок за обновление: +1000 монет','Забрать',()=>{S.coins+=1000;hudu();closeM()}]]),500)}
 hudu();skl();tick();
 </script><script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))</script></body></html>
-<script>
-(function () {
-  const WS_URL = "wss://monet-smerti-server.onrender.com";
-  const STORAGE_KEY = "monet_smerti_server_mode";
-
-  window.remotePlayers = window.remotePlayers || {};
-  let mode = localStorage.getItem(STORAGE_KEY) || "private"; // "private" | "public"
-  let socket = null;
-  let myId = null;
-  let reconnectTimer = null;
-
-  function notify(msg) {
-    if (typeof toast === "function") toast(msg);
-  }
-
-  function closeSocket() {
-    clearTimeout(reconnectTimer);
-    if (socket) {
-      try {
-        socket.close();
-      } catch {}
-      socket = null;
-    }
-    myId = null;
-    window.remotePlayers = {};
-  }
-
-  function openSocket() {
-    closeSocket();
-    socket = new WebSocket(WS_URL);
-
-    socket.addEventListener("open", () => {
-      if (mode === "public") notify("Публичный сервер подключён");
-    });
-
-    socket.addEventListener("message", (event) => {
-      if (mode !== "public") return;
-      let data;
-      try {
-        data = JSON.parse(event.data);
-      } catch {
-        return;
-      }
-
-      if (data.type === "welcome" && data.id) {
-        myId = data.id;
-      } else if (data.type === "players" && Array.isArray(data.players)) {
-        const next = {};
-        for (const p of data.players) {
-          if (p.id !== myId) next[p.id] = p;
-        }
-        window.remotePlayers = next;
-      } else if (data.id && data.id !== myId) {
-        window.remotePlayers[data.id] = { ...window.remotePlayers[data.id], ...data };
-      }
-    });
-
-    socket.addEventListener("close", () => {
-      if (mode === "public") {
-        reconnectTimer = setTimeout(openSocket, 3000);
-      }
-    });
-  }
-
-  function updateButtonUI() {
-    const btn = document.getElementById("serverModeBtn");
-    if (!btn) return;
-    btn.textContent = mode === "public" ? "Сервер: Публичный" : "Сервер: Личный";
-  }
-
-  window.setServerMode = function (nextMode) {
-    mode = nextMode === "public" ? "public" : "private";
-    localStorage.setItem(STORAGE_KEY, mode);
-    updateButtonUI();
-
-    if (mode === "public") {
-      notify("Включён публичный сервер");
-      openSocket();
-    } else {
-      closeSocket();
-      notify("Включён личный режим");
-    }
-  };
-
-  window.getServerMode = function () {
-    return mode;
-  };
-
-  window.sendMultiplayerState = function (payload) {
-    if (mode !== "public") return;
-    if (socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify(payload));
-    }
-  };
-
-  // Простая кнопка в углу — можно спрятать или перенести в твоё меню настроек
-  window.addEventListener("DOMContentLoaded", () => {
-    if (!document.getElementById("serverModeBtn")) {
-      const btn = document.createElement("button");
-      btn.id = "serverModeBtn";
-      btn.type = "button";
-      btn.style.cssText =
-        "position:fixed;right:8px;bottom:8px;z-index:9999;padding:6px 10px;border-radius:8px;border:1px solid #555;background:#16394d;color:#f3e1;font-size:12px;";
-      btn.addEventListener("click", () => {
-        window.setServerMode(mode === "public" ? "private" : "public");
-      });
-      document.body.appendChild(btn);
-    }
-    updateButtonUI();
-    if (mode === "public") openSocket();
-  });
-})();
-</script>
