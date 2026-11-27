@@ -1500,6 +1500,9 @@ window.postFx=function(){const sw=window.swimNow();swP+=((sw?1:0)-swP)*.15;if(sw
 {const e={abyss:'🐋',dog:'🐕',cat:'🐈',octo:'🐙',fox:'🦊',parrot:'🦜',slime:'🟢'},p=(S.petA&&S.petA[0])||S.pet,l=document.getElementById('ldp');if(l)l.textContent=e[p]||'';const ld=document.getElementById('ld');if(ld)setTimeout(()=>{ld.style.opacity=0;setTimeout(()=>ld.remove(),700)},1700)}
 })();
 
+/* ===== server admin key ===== */
+(function(){const o=window.sendMultiplayerState;if(typeof o!=='function')return;window.sendMultiplayerState=function(p){if(p&&p.type==='adm')p=Object.assign({},p,{key:localStorage.getItem('ms_adm_key')||''});return o(p)};
+const a=abuseMenu;abuseMenu=function(){a();const c=$('#mc'),x=c.lastChild,d=document.createElement('div');d.className='row';d.style.flexWrap='wrap';d.innerHTML='<span>Ключ сервера: <input id="srvK" type="password" style="width:130px"></span>';const b=document.createElement('button');b.className='b';b.textContent='Сохранить';b.onclick=()=>{localStorage.setItem('ms_adm_key',$('#srvK').value);toast('Ключ сервера сохранён')};d.append(b);c.insertBefore(d,x)}})();
 const VER='3.1';
 const adm9=window.adm;window.adm=()=>{if(!S.admin)return toast('Только для админа');adm9()};
 {const h=document.createElement('div');h.textContent='Версия '+VER;h.style.cssText='position:fixed;bottom:6px;left:50%;transform:translateX(-50%);font-size:12px;opacity:.6;z-index:6';$('#main').append(h)}
