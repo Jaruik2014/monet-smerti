@@ -1628,8 +1628,17 @@ R.seed((Date.now()^Math.floor(Math.random()*1e9))>>>0);
 })();
 
 /* ===== server admin key ===== */
-(function(){const o=window.sendMultiplayerState;if(typeof o!=='function')return;window.sendMultiplayerState=function(p){if(p&&p.type==='adm')p=Object.assign({},p,{key:localStorage.getItem('ms_adm_key')||''});return o(p)};
+(function(){const o=window.sendMultiplayerState;if(typeof o!=='function')return;window.sendMultiplayerState=function(p){if(p&&(p.type==='adm'||p.type==='list'))p=Object.assign({},p,{key:localStorage.getItem('ms_adm_key')||''});return o(p)};
 const a=abuseMenu;abuseMenu=function(){a();const c=$('#mc'),x=c.lastChild,d=document.createElement('div');d.className='row';d.style.flexWrap='wrap';d.innerHTML='<span>Ключ сервера: <input id="srvK" type="password" style="width:130px"></span>';const b=document.createElement('button');b.className='b';b.textContent='Сохранить';b.onclick=()=>{localStorage.setItem('ms_adm_key',$('#srvK').value);toast('Ключ сервера сохранён')};d.append(b);c.insertBefore(d,x)}})();
+/* ===== admin: players on the server ===== */
+(function(){
+function roster(d){const rows=[['Комната '+d.room+': игроков '+d.players.length+'. Всего на сервере: '+d.total+' в комнатах: '+(d.rooms||[]).map(r=>r.n+'→'+r.c).join(', ')]];
+(d.players||[]).forEach(p=>{if(p.me)return;rows.push([String(p.name)+' (море '+p.sea+')','Телепорт',()=>{pl.position.set(p.x,0,p.z+3);closeM();toast('Телепорт к игроку '+p.name)}])});
+if(rows.length==1)rows.push(['Других игроков в комнате нет']);rows.push(['Обновить список','Обновить',askList]);modal('Игроки на сервере',rows)}
+function askList(){if(getServerMode()!=='public')return toast('Включи Публичный сервер в настройках');if(!localStorage.getItem('ms_adm_key'))return toast('Сначала впиши ключ сервера');try{sendMultiplayerState({type:'list'})}catch(e){}toast('Запрос списка игроков…')}
+{const o=window.mpMsg;window.mpMsg=function(d){if(d&&d.type==='list'){roster(d);return true}return o?o(d):false}}
+{const o=abuseMenu;abuseMenu=function(){o();const c=$('#mc'),x=c.lastChild,d=document.createElement('div');d.className='row';d.innerHTML='<span>Игроки на сервере</span>';const b=document.createElement('button');b.className='b';b.textContent='Показать';b.onclick=askList;d.append(b);c.insertBefore(d,x)}}
+})();
 const VER='3.3';
 const adm9=window.adm;window.adm=()=>{if(!S.admin)return toast('Только для админа');adm9()};
 {const h=document.createElement('div');h.textContent='Версия '+VER;h.style.cssText='position:fixed;bottom:6px;left:50%;transform:translateX(-50%);font-size:12px;opacity:.6;z-index:6';$('#main').append(h)}
